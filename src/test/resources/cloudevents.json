@@ -1,0 +1,86 @@
+{
+  "specversion": "1.0",
+  "id": "80bd2887-daae-4292-a7d3-a862ae45b5bf",
+  "time": "2023-06-12T11:54:26.790466Z",
+  "type": "customers.v1.aml-cft-risks.created",
+  "source": "/customers/v1/aml-cft-risks#post",
+  "datacontenttype": "application/json",
+  "subject": "0078449040010001",
+  "dataschema": "https://schemaregistry/customers/v1/openapi.yaml",
+  "operatoraccount": "SPK0P00",
+  "data": {
+    "id": "0078449040010001",
+    "kind": "https://customers.bancobpi.pt/v1/customers",
+    "customerId": "007844904",
+    "status": "current",
+    "sourceOfRisk": "automatic_calculation",
+    "risk": "low",
+    "acceptanceCode": "accepted",
+    "_elements": [
+      "arara",
+      "ehehehe"
+    ],
+    "nationality": [
+      "PT",
+      "ES"
+    ],
+    "addresses": [
+      {
+        "street": "Avenue One"
+      },
+      {
+        "street": "Avenue Two"
+      }
+    ],
+    "_links": [
+      {
+        "self": {
+          "href": ":///aml-cft-risks/0078449040010001"
+        },
+        "customer": {
+          "href": ":///customers/007844904"
+        }
+      },
+      {
+        "self": {
+          "href": ":///aml-cft-risks/0078449040010001"
+        },
+        "customer": {
+          "href": ":///customers/007844904"
+        }
+      },
+      {
+        "self": {
+          "href": ":///aml-cft-risks/0078449040010001"
+        },
+        "customer": {
+          "href": ":///customers/007844904"
+        }
+      },
+      {
+        "self": {
+          "href": ":///aml-cft-risks/0078449040010001"
+        },
+        "customer": {
+          "href": ":///customers/007844904"
+        }
+      },
+      {
+        "self": {
+          "href": ":///aml-cft-risks/0078449040010001"
+        },
+        "customer": {
+          "href": ":///customers/007844904"
+        }
+      },
+      {
+        "self": {
+          "href": ":///aml-cft-risks/0078449040010001"
+        },
+        "customer": {
+          "href": ":///customers/007844904"
+        }
+      }
+    ]
+  }
+}

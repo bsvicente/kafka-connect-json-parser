@@ -3,11 +3,13 @@ package com.github.bsvicente.jsonparser.processor;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.SchemaBuilder;
 
 import java.util.Map;
 
+@Slf4j
 public class JsonToSchemaConverter {
 
     public static Schema generateSchemaFromJson(JsonElement jsonElement) {
@@ -19,6 +21,9 @@ public class JsonToSchemaConverter {
         switch (jsonElement.getClass().getSimpleName()) {
             case "JsonPrimitive":
                 builder = getSchemaBuilderFromPrimitive(jsonElement.getAsJsonPrimitive());
+                break;
+            case "JsonNull":
+                builder = getSchemaBuilderFromPrimitive(jsonElement.getAsJsonNull());
                 break;
             case "JsonArray":
                 builder = getSchemaBuilderFromArray(jsonElement.getAsJsonArray());
@@ -33,8 +38,9 @@ public class JsonToSchemaConverter {
     }
 
     private static SchemaBuilder getSchemaBuilderFromPrimitive(JsonElement element) {
-        SchemaBuilder builder = SchemaBuilder.type(Schema.Type.STRING);
+        SchemaBuilder builder;
         if (element.isJsonNull()) {
+            builder = SchemaBuilder.struct();
             builder.optional();
         } else {
             switch (element.getAsJsonPrimitive().getClass().getSimpleName()) {
@@ -54,7 +60,6 @@ public class JsonToSchemaConverter {
         }
         return builder;
     }
-
     private static SchemaBuilder getSchemaBuilderFromArray(JsonArray array) {
         SchemaBuilder builder = SchemaBuilder.type(Schema.Type.ARRAY);
         if (array.size() == 0 || array.get(0).isJsonNull()) {
