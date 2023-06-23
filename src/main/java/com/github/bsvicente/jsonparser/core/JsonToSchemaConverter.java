@@ -1,9 +1,11 @@
-package com.github.bsvicente.jsonparser.processor;
+package com.github.bsvicente.jsonparser.core;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.SchemaBuilder;
 
@@ -13,10 +15,17 @@ import java.util.Map;
 public class JsonToSchemaConverter {
 
     public static Schema generateSchemaFromJson(JsonElement jsonElement) {
-        return generateSchemaBuilder(jsonElement).optional().build();
+        return generateSchemaFromJson(jsonElement, "");
     }
 
-    private static SchemaBuilder generateSchemaBuilder(JsonElement jsonElement) {
+    @SneakyThrows
+    public static Schema generateSchemaFromJson(JsonElement jsonElement, String schemaName) {
+        return generateSchemaBuilder(jsonElement, schemaName)
+                .optional().build();
+    }
+
+
+    private static SchemaBuilder generateSchemaBuilder(JsonElement jsonElement, String schemaName) {
         SchemaBuilder builder;
         switch (jsonElement.getClass().getSimpleName()) {
             case "JsonPrimitive":
@@ -26,10 +35,10 @@ public class JsonToSchemaConverter {
                 builder = getSchemaBuilderFromPrimitive(jsonElement.getAsJsonNull());
                 break;
             case "JsonArray":
-                builder = getSchemaBuilderFromArray(jsonElement.getAsJsonArray());
+                builder = getSchemaBuilderFromArray(jsonElement.getAsJsonArray(), schemaName);
                 break;
             case "JsonObject":
-                builder = getSchemaBuilderFromObject(jsonElement.getAsJsonObject());
+                builder = getSchemaBuilderFromObject(jsonElement.getAsJsonObject(), schemaName);
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported JSON element type: " + jsonElement.getClass());
@@ -60,18 +69,20 @@ public class JsonToSchemaConverter {
         }
         return builder;
     }
-    private static SchemaBuilder getSchemaBuilderFromArray(JsonArray array) {
+
+    private static SchemaBuilder getSchemaBuilderFromArray(JsonArray array, String schemaName) {
         SchemaBuilder builder = SchemaBuilder.type(Schema.Type.ARRAY);
         if (array.size() == 0 || array.get(0).isJsonNull()) {
             builder.optional();
         } else {
-            Schema elementBuilder = generateSchemaFromJson(array.get(0));
+            Schema elementBuilder = generateSchemaFromJson(array.get(0), schemaName);
             builder = SchemaBuilder.array(elementBuilder);
         }
         return builder;
     }
 
-    private static SchemaBuilder getSchemaBuilderFromObject(JsonObject object) {
+    private static SchemaBuilder getSchemaBuilderFromObject(JsonObject object, String schemaName) {
+
         SchemaBuilder builder = SchemaBuilder.struct();
 
         for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
@@ -80,10 +91,10 @@ public class JsonToSchemaConverter {
             if (value.isJsonNull()) {
                 builder.field(key, Schema.OPTIONAL_STRING_SCHEMA);
             } else {
-                builder.field(key, generateSchemaFromJson(value));
+                builder.field(key, generateSchemaFromJson(value, StringUtils.capitalize(schemaName) + "AllOf" + StringUtils.capitalize(key)));
             }
         }
-        return builder;
+        return builder.name(schemaName);
     }
 }
 

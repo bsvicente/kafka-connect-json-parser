@@ -17,8 +17,8 @@
     "risk": "low",
     "acceptanceCode": "accepted",
     "_elements": [
-      "arara",
-      "ehehehe"
+      "ehehehe",
+      "arara"
     ],
     "nationality": [
       "PT",
@@ -26,10 +26,12 @@
     ],
     "addresses": [
       {
-        "street": "Avenue One"
+        "street": "Avenue One",
+        "city": "Lisbon"
       },
       {
-        "street": "Avenue Two"
+        "street": "Avenue Two",
+        "city": "Lisbon"
       }
     ],
     "_links": [

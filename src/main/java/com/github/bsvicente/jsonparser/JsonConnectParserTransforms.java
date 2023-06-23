@@ -1,8 +1,9 @@
 package com.github.bsvicente.jsonparser;
 
 import com.github.bsvicente.jsonparser.processor.JsonBlacklistFilter;
-import com.github.bsvicente.jsonparser.processor.JsonToSchemaConverter;
-import com.github.bsvicente.jsonparser.processor.JsonToStructConverter;
+import com.github.bsvicente.jsonparser.core.JsonToSchemaConverter;
+import com.github.bsvicente.jsonparser.core.JsonToStructConverter;
+import com.github.bsvicente.jsonparser.processor.JsonSortFilter;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import lombok.extern.slf4j.Slf4j;
@@ -19,16 +20,7 @@ import java.util.Map;
 
 @Slf4j
 public class JsonConnectParserTransforms<R extends ConnectRecord<R>> implements Transformation<R> {
-
-    public static final String[] blacklist = {"_links", "_elements"};
-
-    public static final String FIELD_KEY_CONFIG = "key";
-    public static final String FIELD_BLACKLIST_CONFIG = "blacklist";
-    public static final ConfigDef CONFIG_DEF = new ConfigDef()
-            .define(FIELD_KEY_CONFIG, ConfigDef.Type.STRING, null, ConfigDef.Importance.MEDIUM,
-                    "Transforms Plain Json to Connect Struct");
-//            .define(FIELD_BLACKLIST_CONFIG, ConfigDef.Type.STRING, null, ConfigDef.Importance.MEDIUM,
-//                    "Apply blacklist filter on Json before parsing.");
+    JsonConnectParserTransformsConfig config;
 
     @Override
     public R apply(R r) {
@@ -73,16 +65,18 @@ public class JsonConnectParserTransforms<R extends ConnectRecord<R>> implements 
         log.info("Parsing JSON element: " + jsonElement.toString() + " as JSON element type: " + jsonElement.getClass().getSimpleName());
 
         JsonBlacklistFilter.builder()
-                .blacklist(blacklist)
+                .blacklist(config.blacklistFilter)
                 .build()
                 .filterElements(jsonElement);
 
-        var schema = JsonToSchemaConverter.generateSchemaFromJson(jsonElement);
+        JsonElement sortedJsonElement = config.sortFields ? JsonSortFilter.sortJsonElement(jsonElement) : jsonElement;
+
+        var schema = JsonToSchemaConverter.generateSchemaFromJson(sortedJsonElement, config.entityName);
         result.put("schema", schema);
 
         Struct message = null;
-        if (!jsonElement.isJsonNull())
-            message = JsonToStructConverter.convertJsonToStruct(jsonElement, schema);
+        if (!sortedJsonElement.isJsonNull())
+            message = JsonToStructConverter.convertJsonToStruct(sortedJsonElement, schema);
 
         result.put("message", message);
 
@@ -92,7 +86,7 @@ public class JsonConnectParserTransforms<R extends ConnectRecord<R>> implements 
 
     @Override
     public ConfigDef config() {
-        return CONFIG_DEF;
+        return JsonConnectParserTransformsConfig.config();
     }
 
     @Override
@@ -101,6 +95,7 @@ public class JsonConnectParserTransforms<R extends ConnectRecord<R>> implements 
 
     @Override
     public void configure(Map<String, ?> map) {
+        this.config = new JsonConnectParserTransformsConfig(map);
 
     }
 }

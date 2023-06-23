@@ -1,8 +1,9 @@
 package com.github.bsvicente.jsonparser;
 
 import com.github.bsvicente.jsonparser.processor.JsonBlacklistFilter;
-import com.github.bsvicente.jsonparser.processor.JsonToSchemaConverter;
-import com.github.bsvicente.jsonparser.processor.JsonToStructConverter;
+import com.github.bsvicente.jsonparser.core.JsonToSchemaConverter;
+import com.github.bsvicente.jsonparser.core.JsonToStructConverter;
+import com.github.bsvicente.jsonparser.processor.JsonSortFilter;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import lombok.extern.java.Log;
@@ -12,6 +13,9 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 @Log
 class JsonConnectParserTransformsTest {
@@ -20,22 +24,24 @@ class JsonConnectParserTransformsTest {
     @Test
     public void validateContent() throws IOException {
 
-        final String[] blacklist = {"_links", "_elements"};
+        final Set<String> blacklist = new HashSet<>(Arrays.asList("_links", "_elements"));
 
         var file = new File("src/test/resources/cloudevents.json");
 
         JsonElement jsonElement = JsonParser.parseString(Files.readString(file.toPath()));
+
+        log.info("Parsing JSON element: " + jsonElement.toString() + " as JSON element type: " + jsonElement.getClass().getSimpleName());
 
         JsonBlacklistFilter.builder()
                 .blacklist(blacklist)
                 .build()
                 .filterElements(jsonElement);
 
-        log.info("Parsing JSON element: " + jsonElement.toString() + " as JSON element type: " + jsonElement.getClass().getSimpleName());
+        JsonElement sortedJsonElement = JsonSortFilter.sortJsonElement(jsonElement);
 
-        var schema = JsonToSchemaConverter.generateSchemaFromJson(jsonElement);
+        var schema = JsonToSchemaConverter.generateSchemaFromJson(sortedJsonElement, null);
 
-        var message = JsonToStructConverter.convertJsonToStruct(jsonElement, schema);
+        var message = JsonToStructConverter.convertJsonToStruct(sortedJsonElement, schema);
 
         log.info(message.toString());
     }
@@ -49,7 +55,9 @@ class JsonConnectParserTransformsTest {
 
         log.info("Parsing JSON element: " + jsonElement.toString() + " as JSON element type: " + jsonElement.getClass().getSimpleName());
 
-        var schema = JsonToSchemaConverter.generateSchemaFromJson(jsonElement);
+        JsonElement sortedJsonElement = JsonSortFilter.sortJsonElement(jsonElement);
+
+        var schema = JsonToSchemaConverter.generateSchemaFromJson(sortedJsonElement);
 
         Struct message =  new Struct(schema); //JsonToStructConverter.convertJsonToStruct(jsonElement, schema);
 

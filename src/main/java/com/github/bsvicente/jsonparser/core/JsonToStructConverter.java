@@ -1,4 +1,4 @@
-package com.github.bsvicente.jsonparser.processor;
+package com.github.bsvicente.jsonparser.core;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
